@@ -1,0 +1,202 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model categories {
+  category_id      Int                @id @default(autoincrement())
+  name             String             @unique(map: "name") @db.VarChar(191)
+  slug             String             @unique(map: "slug") @db.VarChar(191)
+  description      String?            @db.Text
+  created_at       DateTime?          @default(now()) @db.DateTime(0)
+  comic_categories comic_categories[]
+}
+
+model chapter_images {
+  image_id   Int       @id @default(autoincrement())
+  chapter_id Int
+  image_url  String    @db.VarChar(191)
+  created_at DateTime? @default(now()) @db.DateTime(0)
+  chapters   chapters  @relation(fields: [chapter_id], references: [chapter_id], onDelete: Cascade, onUpdate: NoAction, map: "chapter_images_ibfk_1")
+
+  @@index([chapter_id], map: "chapter_id")
+}
+
+model chapter_unlocks {
+  unlock_id   Int       @id @default(autoincrement())
+  user_id     Int
+  chapter_id  Int
+  unlock_time DateTime? @default(now()) @db.DateTime(0)
+  chapters    chapters  @relation(fields: [chapter_id], references: [chapter_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_chapter_unlocks_chapter")
+  users       users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_chapter_unlocks_user")
+
+  @@index([chapter_id], map: "fk_chapter_unlocks_chapter")
+  @@index([user_id], map: "fk_chapter_unlocks_user")
+  
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model chapters {
+  chapter_id         Int                  @id @default(autoincrement())
+  comic_id           Int
+  title              String               @db.VarChar(191)
+  slug               String               @unique(map: "slug") @db.VarChar(191)
+  is_locked          Boolean?             @default(true)
+  price_xu           Int?                 @default(0)
+  auto_unlock_time   DateTime?            @db.DateTime(0)
+  created_at         DateTime?            @default(now()) @db.DateTime(0)
+  chapter_images     chapter_images[]
+  chapter_unlocks    chapter_unlocks[]
+  comics             comics               @relation(fields: [comic_id], references: [comic_id], onDelete: Cascade, onUpdate: NoAction, map: "chapters_ibfk_1")
+  comic_read_history comic_read_history[]
+  comments           comments[]
+
+  @@index([comic_id], map: "comic_id")
+  @@index([is_locked, auto_unlock_time], map: "idx_auto_unlock")
+}
+
+model comic_categories {
+  comic_id    Int
+  category_id Int
+  comics      comics     @relation(fields: [comic_id], references: [comic_id], onDelete: Cascade, onUpdate: NoAction, map: "comic_categories_ibfk_1")
+  categories  categories @relation(fields: [category_id], references: [category_id], onDelete: Cascade, onUpdate: NoAction, map: "comic_categories_ibfk_2")
+
+  @@id([comic_id, category_id])
+  @@index([category_id], map: "category_id")
+}
+
+model comic_followers {
+  user_id  Int
+  comic_id Int
+  users    users  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "comic_followers_ibfk_1")
+  comics   comics @relation(fields: [comic_id], references: [comic_id], onDelete: Cascade, onUpdate: NoAction, map: "comic_followers_ibfk_2")
+
+  @@id([user_id, comic_id])
+  @@index([comic_id], map: "comic_id")
+}
+
+model comic_read_history {
+  history_id Int       @id @default(autoincrement())
+  user_id    Int
+  comic_id   Int
+  chapter_id Int
+  read_time  DateTime? @default(now()) @db.DateTime(0)
+  users      users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "comic_read_history_ibfk_1")
+  comics     comics    @relation(fields: [comic_id], references: [comic_id], onDelete: Cascade, onUpdate: NoAction, map: "comic_read_history_ibfk_2")
+  chapters   chapters  @relation(fields: [chapter_id], references: [chapter_id], onDelete: NoAction, onUpdate: NoAction, map: "comic_read_history_ibfk_3")
+
+  @@index([chapter_id], map: "chapter_id")
+  @@index([comic_id], map: "comic_id")
+  @@index([user_id], map: "user_id")
+}
+
+model comics {
+  comic_id           Int                  @id @default(autoincrement())
+  title              String               @db.VarChar(191)
+  slug               String               @unique(map: "slug") @db.VarChar(191)
+  description        String?              @db.Text
+  author             String?              @db.VarChar(191)
+  status             comics_status        @default(DANG_RA)
+  cover_image        String?              @db.VarChar(191)
+  country_id         Int?
+  views              Int?                 @default(0)
+  likes              Int?                 @default(0)
+  created_at         DateTime?            @default(now()) @db.DateTime(0)
+  chapters           chapters[]
+  comic_categories   comic_categories[]
+  comic_followers    comic_followers[]
+  comic_read_history comic_read_history[]
+  countries          countries?           @relation(fields: [country_id], references: [country_id], onUpdate: NoAction, map: "comics_ibfk_1")
+  comments           comments[]
+
+  @@index([country_id], map: "country_id")
+}
+
+model comments {
+  comment_id        Int        @id @default(autoincrement())
+  user_id           Int
+  comic_id          Int
+  chapter_id        Int?
+  content           String     @db.Text
+  parent_comment_id Int?
+  created_at        DateTime?  @default(now()) @db.DateTime(0)
+  users             users      @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "comments_ibfk_1")
+  comics            comics     @relation(fields: [comic_id], references: [comic_id], onDelete: Cascade, onUpdate: NoAction, map: "comments_ibfk_2")
+  chapters          chapters?  @relation(fields: [chapter_id], references: [chapter_id], onDelete: NoAction, onUpdate: NoAction, map: "comments_ibfk_3")
+  comments          comments?  @relation("commentsTocomments", fields: [parent_comment_id], references: [comment_id], onDelete: Cascade, onUpdate: NoAction, map: "comments_ibfk_4")
+  other_comments    comments[] @relation("commentsTocomments")
+
+  @@index([chapter_id], map: "chapter_id")
+  @@index([comic_id], map: "comic_id")
+  @@index([parent_comment_id], map: "parent_comment_id")
+  @@index([user_id], map: "user_id")
+}
+
+model countries {
+  country_id Int       @id @default(autoincrement())
+  name       String    @unique(map: "name") @db.VarChar(191)
+  created_at DateTime? @default(now()) @db.DateTime(0)
+  comics     comics[]
+}
+
+model notifications {
+  notification_id Int                @id @default(autoincrement())
+  user_id         Int
+  message         String             @db.VarChar(191)
+  type            notifications_type
+  created_at      DateTime?          @default(now()) @db.DateTime(0)
+  users           users              @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "notifications_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model transactions {
+  transaction_id   Int       @id @default(autoincrement())
+  user_id          Int
+  amount           Int
+  xu_received      Int
+  transaction_date DateTime? @default(now()) @db.DateTime(0)
+  users            users     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "transactions_ibfk_1")
+
+  @@index([user_id], map: "user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model users {
+  user_id            Int                  @id @default(autoincrement())
+  username           String               @unique(map: "username") @db.VarChar(191)
+  password           String               @db.VarChar(191)
+  email              String?              @unique(map: "email") @db.VarChar(191)
+  role               users_role           @default(user)
+  cover_image        String?              @db.VarChar(191)
+  total_coins        Int?                 @default(0)
+  created_at         DateTime?            @default(now()) @db.DateTime(0)
+  chapter_unlocks    chapter_unlocks[]
+  comic_followers    comic_followers[]
+  comic_read_history comic_read_history[]
+  comments           comments[]
+  notifications      notifications[]
+  transactions       transactions[]
+}
+
+enum notifications_type {
+  payment
+  unlock
+  comment_reply
+}
+
+enum users_role {
+  admin
+  user
+}
+
+enum comics_status {
+  DANG_RA       @map("Đang ra")
+  HOAN_THANH    @map("Hoàn thành")
+}
+
