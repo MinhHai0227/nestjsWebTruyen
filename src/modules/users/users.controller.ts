@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpException, HttpStatus, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpException, HttpStatus, ParseIntPipe, Request, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { users_role } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/pasport/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -34,4 +35,12 @@ export class UsersController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.remove(id);
   }
+
+  @Get('unlock')
+  @UseGuards(JwtAuthGuard)
+  findOne(@Request() req){
+    const user_id = req.user.userId;
+    return this.usersService.findOne(user_id);
+  }
+
 }

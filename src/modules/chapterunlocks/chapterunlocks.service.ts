@@ -16,27 +16,23 @@ export class ChapterunlocksService {
     private readonly notificationService: NotificationsService,
   ){}
 
-  create(createChapterunlockDto: CreateChapterunlockDto) {
-    return 'This action adds a new chapterunlock';
+
+  async exisUserUnlock(user_id: number, chapter_id: number){
+
+    const chapter = await this.chapterService.exisChapter(chapter_id);
+    const user = await this.userService.exisuser(user_id);
+
+    const userUnlock = await this.prisma.chapter_unlocks.findFirst({
+      where: {
+        chapter_id: chapter.chapter_id,
+        user_id: user.user_id,
+      }
+    })
+
+    return !!userUnlock;
   }
 
-  findAll() {
-    return `This action returns all chapterunlocks`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} chapterunlock`;
-  }
-
-  update(id: number, updateChapterunlockDto: UpdateChapterunlockDto) {
-    return `This action updates a #${id} chapterunlock`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} chapterunlock`;
-  }
-
-  async unlockChapterForUser(user_id: number, chapter_id: number){
+  async userHasUnlock(user_id: number, chapter_id: number){
 
     const chapter = await this.chapterService.exisChapter(chapter_id);
     const user = await this.userService.exisuser(user_id);
@@ -44,20 +40,32 @@ export class ChapterunlocksService {
     const currentTime = new Date();
     const isBeforUnlock = chapter.auto_unlock_time && chapter.auto_unlock_time > currentTime;
 
-    if(isBeforUnlock){
-      await this.userService.updateTotal(user_id,chapter.price_xu ?? 0)
+    if(!isBeforUnlock){
+      throw new HttpException('Chapter đã được mở khóa tự động', HttpStatus.BAD_REQUEST)
     }
 
-    console.log('check user xu >>>>', user?.total_coins)
-    console.log('check chapter xu >>>>', chapter.price_xu)
+    const userUnlock = await this.exisUserUnlock(user.user_id, chapter.chapter_id)
 
-    await this.chapterService.updateUnlockChapter(chapter_id,false)
-    await this.notificationService.notifiUnlock(user_id,chapter.title)
+    if(userUnlock === true){
+      throw new HttpException('Bạn đã mở khóa chapter này', HttpStatus.BAD_REQUEST)
+    }
+
+    return {message: "Bạn phải mở khóa hoặc tới ngày unlock mới đọc được"}
+  }
+
+  async unlockChapterForUser(user_id: number, chapter_id: number){
+
+    const chapter = await this.chapterService.exisChapter(chapter_id);
+    const user = await this.userService.exisuser(user_id);
+
+    await this.userHasUnlock(user.user_id,chapter.chapter_id);
+
+    await this.userService.updateTotal(user.user_id,chapter.price_xu ?? 0)
+    await this.notificationService.notifiUnlock(user.user_id,chapter.title)
     await this.prisma.chapter_unlocks.create({
       data: {
         user_id: user_id,
         chapter_id: chapter_id,
-        unlock_time: currentTime
       }
     })
     return {message: 'Mở hóa thành công'}

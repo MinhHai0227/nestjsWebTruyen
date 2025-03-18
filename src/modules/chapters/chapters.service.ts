@@ -77,57 +77,55 @@ export class ChaptersService {
     return chapter;
   }
 
-  
-  async updateUnlockChapter(id: number, status: boolean){
-    await this.exisChapter(id)
-    const chapter = this.prisma.chapters.update({
-      where: {chapter_id: id},
-      data: {
-        is_locked: status
-      }
-    })
-    return chapter
-  }
+
 
   @Cron(CronExpression.EVERY_HOUR)
-  async autounlockChapter(){
+  async autounlockChapter() {
     let page = 1;
     const page_size = 100;
-
-    const oneHourAgo = new Date();
-    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
-
-    while(true){
-      const chapters = await this.prisma.chapters.findMany({
-        where: {
-          is_locked: true,
-          auto_unlock_time:{
-            gte: oneHourAgo,
-            lte: new Date(),
-          }
-        },
-        skip: (page -1 ) * page_size,
-        take: page_size
-      });
-
-      if(chapters.length === 0){
-        break;
-      }
-
-      await Promise.all(
-        chapters.map( async (chapter) => {
-          return await this.prisma.chapters.update({
-            where: {chapter_id: chapter.chapter_id},
-            data:{
-              is_locked: false
+  
+    const currentTime = new Date();
+  
+    try {
+      while (true) {
+        // Lấy các chapter cần unlock
+        const chapters = await this.prisma.chapters.findMany({
+          where: {
+            is_locked: true,
+            auto_unlock_time: {
+              lt: currentTime,  
+            }
+          },
+          skip: (page - 1) * page_size,
+          take: page_size
+        });
+  
+        if (chapters.length === 0) {
+          break;  
+        }
+  
+        await Promise.all(
+          chapters.map(async (chapter) => {
+            try {
+              await this.prisma.chapters.update({
+                where: { chapter_id: chapter.chapter_id },
+                data: {
+                  is_locked: false  
+                }
+              });
+              console.log(`Chapter ${chapter.chapter_id} unlocked.`);
+            } catch (error) {
+              console.error(`Error updating chapter ${chapter.chapter_id}:`, error);
             }
           })
-        })
-      )
-
-      page++;
+        );
+  
+        // Tiến đến trang tiếp theo nếu cần
+        page++;
+      }
+    } catch (error) {
+      console.error('Error during cron job execution:', error);
     }
   }
-
   
 }

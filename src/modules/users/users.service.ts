@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PasswordwordService } from 'src/helpers/pasword.service';
-import { users, users_role } from '@prisma/client';
+import { Prisma, users, users_role } from '@prisma/client';
 import { PaninationService } from 'src/helpers/panination.service';
 import { CreateRegisterDto } from 'src/auth/dto/create-register.dto';
 
@@ -143,10 +143,10 @@ export class UsersService {
   }
 
   async updateTotal(id: number, total: number){
-    const user =  await await this.exisuser(id)
+    const user =   await this.exisuser(id)
 
     if((user.total_coins ?? 0) < total){
-      throw new Error('User không đủ xu');
+      throw new HttpException("User không đủ xu", HttpStatus.BAD_REQUEST)
     }
 
     const updatedUser = await this.prisma.users.update({
@@ -161,5 +161,15 @@ export class UsersService {
     return updatedUser;
     
   }
+  
+  async findOne(user_id: number){
 
+    await this.exisuser(user_id)
+
+    return await this.prisma.users.findUnique({
+      where: {user_id: user_id}
+    })
+  }
+    
+  
 }

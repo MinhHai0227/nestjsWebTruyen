@@ -1,42 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, ParseIntPipe, Body, Request, UseGuards } from '@nestjs/common';
 import { ChapterunlocksService } from './chapterunlocks.service';
-import { CreateChapterunlockDto } from './dto/create-chapterunlock.dto';
-import { UpdateChapterunlockDto } from './dto/update-chapterunlock.dto';
+import { JwtAuthGuard } from 'src/auth/pasport/jwt-auth.guard';
+
 
 @Controller('chapterunlocks')
 export class ChapterunlocksController {
   constructor(private readonly chapterunlocksService: ChapterunlocksService) {}
 
-  @Post()
-  create(@Body() createChapterunlockDto: CreateChapterunlockDto) {
-    return this.chapterunlocksService.create(createChapterunlockDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.chapterunlocksService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.chapterunlocksService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateChapterunlockDto: UpdateChapterunlockDto) {
-    return this.chapterunlocksService.update(+id, updateChapterunlockDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.chapterunlocksService.remove(+id);
-  }
-
-  @Post(':userid/:chapterid')
-  unlockChapterForUser(
-    @Param('userid', ParseIntPipe) userid: number,
+  
+  @Get(':chapterid')
+  @UseGuards(JwtAuthGuard)
+  exisUserUnlock(
+    @Request() req,
     @Param('chapterid', ParseIntPipe) chapterid: number,
   ){
+    const userid = req.user.userId
+    return this.chapterunlocksService.exisUserUnlock(userid,chapterid)
+  }
+
+  @Post(':chapterid')
+  @UseGuards(JwtAuthGuard)
+  unlockChapterForUser(
+    @Request() req,
+    @Param('chapterid', ParseIntPipe) chapterid: number,
+  ){
+    const userid = req.user.userId
     return this.chapterunlocksService.unlockChapterForUser(userid,chapterid)
   }
 }
