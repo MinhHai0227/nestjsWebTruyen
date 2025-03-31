@@ -61,8 +61,12 @@ export class ChaptersService {
     return `This action updates a #${id} chapter`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} chapter`;
+  async remove(id: number) {
+    await this.exisChapter(id)
+
+    return this.prisma.chapters.delete({
+      where:{ chapter_id: id}
+    })
   }
 
   async exisChapter(chapter_id: number){
@@ -119,8 +123,6 @@ export class ChaptersService {
             }
           })
         );
-  
-        // Tiến đến trang tiếp theo nếu cần
         page++;
       }
     } catch (error) {

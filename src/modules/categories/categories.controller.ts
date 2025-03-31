@@ -22,12 +22,18 @@ export class CategoriesController {
   @Get(':id')
   @Public()
   findComicByCategory(
+    @Param('id', ParseIntPipe ) id: number,
     @Query('page') page: number =1,
     @Query('limit') limit: number =36,
-    @Param('id', ParseIntPipe ) id: number,
   ) {
     return this.categoriesService.findComicByCategory(id,page,limit);
   }
+
+  // @Get(':id')
+  // @Public()
+  // findOne(@Param('id', ParseIntPipe) id: number){
+  //   return this.categoriesService.findOne(id);
+  // }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {

@@ -6,20 +6,22 @@ import { ChaptersService } from '../chapters/chapters.service';
 
 @Injectable()
 export class ChapterimagesService {
-
   constructor(
     private readonly prisma: PrismaService,
-    private readonly chapterService :ChaptersService
-  ){}
+    private readonly chapterService: ChaptersService,
+  ) {}
 
-  async create(createChapterimageDto: CreateChapterimageDto) {
-    await this.chapterService.exisChapter(createChapterimageDto.chapter_id);
+  async create(chapter_id: number, files: Express.Multer.File[]) {
+    await this.chapterService.exisChapter(chapter_id);
 
-    const chapterimg = await this.prisma.chapter_images.create({
-      data: createChapterimageDto
-    })
+    const images = files.map((file) => ({
+      chapter_id: chapter_id,
+      image_url: `http://localhost:3000/uploads/chapter/${file.filename}`,
+    }));
 
-    return chapterimg;
+    return await this.prisma.chapter_images.createMany({
+      data: images,
+    });
   }
 
   findAll() {

@@ -7,9 +7,9 @@ import { PaninationService } from 'src/helpers/panination.service';
 import { CategoriesModule } from '../categories/categories.module';
 
 @Module({
-  imports:[PrismaModule, CountriesModule,CategoriesModule],
+  imports: [PrismaModule, CountriesModule, CategoriesModule],
   controllers: [ComicsController],
   providers: [ComicsService, PaninationService],
-  exports:[ComicsService]
+  exports: [ComicsService],
 })
 export class ComicsModule {}

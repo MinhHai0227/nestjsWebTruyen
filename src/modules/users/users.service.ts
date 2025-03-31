@@ -170,6 +170,14 @@ export class UsersService {
       where: {user_id: user_id}
     })
   }
-    
-  
+
+  async uploadAvatar(user_id: number,file: Express.Multer.File){
+    await this.exisuser(user_id);
+    return await this.prisma.users.update({
+      where: {user_id: user_id},
+      data : {
+        cover_image: `http://localhost:3000/uploads/avatar/${file.filename}`
+      }
+    })
+  }
 }

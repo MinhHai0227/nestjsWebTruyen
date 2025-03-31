@@ -17,6 +17,8 @@ import { ComicreadhistoryModule } from './modules/comicreadhistory/comicreadhist
 import { ComicfollowersModule } from './modules/comicfollowers/comicfollowers.module';
 import { ChapterunlocksModule } from './modules/chapterunlocks/chapterunlocks.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 
 @Module({
@@ -27,6 +29,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     },
   ],
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads'
+    }),
     PrismaModule, 
     UsersModule, 
     CategoriesModule, 

@@ -39,8 +39,16 @@ export class CreateComicDto {
   @IsInt()
   likes: number;
 
-  @IsArray({message: "Phải là 1 mảng"})
-  @ArrayNotEmpty({message: "Category không được trống"})
-  @IsInt({ each: true })
+  @IsArray({ message: "Phải là 1 mảng" })
+  @ArrayNotEmpty({ message: "Category không được trống" })
+  @IsInt({ each: true, message: 'Phải là số nguyên' })
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      return value.map((v) => parseInt(v, 10)); 
+    }
+    return value;
+  })
   categoryIds: number[];
+  
+
 }

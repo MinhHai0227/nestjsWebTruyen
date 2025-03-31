@@ -30,8 +30,8 @@ export class ChaptersController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.chaptersService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.chaptersService.remove(id);
   }
 
 }
