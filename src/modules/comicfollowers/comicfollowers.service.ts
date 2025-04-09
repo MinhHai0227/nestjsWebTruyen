@@ -23,4 +23,8 @@ export class ComicfollowersService {
   remove(id: number) {
     return `This action removes a #${id} comicfollower`;
   }
+
+  getCOmicByUser(user_id){
+    
+  }
 }

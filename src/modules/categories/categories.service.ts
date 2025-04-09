@@ -83,8 +83,7 @@ export class CategoriesService {
         comic_categories:{
           take,
           skip,
-          select:{comics: true},
-          
+          select:{comics: true},        
         }
       }
     })

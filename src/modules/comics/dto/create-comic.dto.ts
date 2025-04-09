@@ -1,9 +1,15 @@
-import { comics_status } from "@prisma/client";
-import { Transform } from "class-transformer";
-import { ArrayNotEmpty, IsArray, IsEnum, IsInt, IsOptional, IsString } from "class-validator";
+import { comics_status } from '@prisma/client';
+import { Transform } from 'class-transformer';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateComicDto {
-
   @IsString()
   title: string;
 
@@ -39,16 +45,14 @@ export class CreateComicDto {
   @IsInt()
   likes: number;
 
-  @IsArray({ message: "Phải là 1 mảng" })
-  @ArrayNotEmpty({ message: "Category không được trống" })
+  @IsArray({ message: 'Phải là 1 mảng' })
+  @ArrayNotEmpty({ message: 'Category không được trống' })
   @IsInt({ each: true, message: 'Phải là số nguyên' })
   @Transform(({ value }) => {
     if (Array.isArray(value)) {
-      return value.map((v) => parseInt(v, 10)); 
+      return value.map((v) => parseInt(v, 10));
     }
     return value;
   })
   categoryIds: number[];
-  
-
 }

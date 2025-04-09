@@ -24,7 +24,7 @@ export class ComicsService {
 
     await this.countryService.findOne(createComicDto.country_id);
 
-    const { categoryIds, cover_image, ...comicData } = createComicDto;
+    const { categoryIds, ...comicData } = createComicDto;
 
     return await this.prisma.comics.create({
       data: {
@@ -122,7 +122,7 @@ export class ComicsService {
 
   async findCateByComic(comic_id: number) {
     const comic = await this.prisma.comics.findUnique({
-      where: { comic_id: comic_id },
+      where: { comic_id:comic_id },
       include: {
         chapters: {
           orderBy: {

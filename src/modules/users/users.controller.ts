@@ -1,4 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpException, HttpStatus, ParseIntPipe, Request, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  HttpException,
+  HttpStatus,
+  ParseIntPipe,
+  Request,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -11,12 +27,10 @@ import { Public } from 'src/decorator/setpublic';
 
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto){
+  create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
@@ -24,17 +38,23 @@ export class UsersController {
   @Public()
   findAll(
     @Query('role') role?: users_role,
-    @Query('page') page: number = 1 ,
+    @Query('page') page: number = 1,
     @Query('limit') limit: number = 5,
   ) {
     if (role && !Object.values(users_role).includes(role)) {
-      throw new HttpException('Invalid role. Role must be "user" or "admin".', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Invalid role. Role must be "user" or "admin".',
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    return this.usersService.findAll(page,limit,role);
+    return this.usersService.findAll(page, limit, role);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return this.usersService.update(id, updateUserDto);
   }
 
@@ -45,7 +65,7 @@ export class UsersController {
 
   @Get('unlock')
   @UseGuards(JwtAuthGuard)
-  findOne(@Request() req){
+  findOne(@Request() req) {
     const user_id = req.user.userId;
     return this.usersService.findOne(user_id);
   }
@@ -60,18 +80,21 @@ export class UsersController {
           const name = file.originalname.split('.')[0];
           const ext = extname(file.originalname);
           const randomName = name + '-' + Date.now() + ext;
-          callback(null, randomName)
+          callback(null, randomName);
         },
-      })     
-    })
+      }),
+    }),
   )
-  async uploadAvatar(@Request() req, @UploadedFile() file: Express.Multer.File){
+  async uploadAvatar(
+    @Request() req,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     const user_id = req.user.userId;
-    
-    if(!file){
+
+    if (!file) {
       throw new Error('No file uploaded!');
     }
-    
+
     const updatedUser = await this.usersService.uploadAvatar(user_id, file);
 
     return {
@@ -79,5 +102,4 @@ export class UsersController {
       avatar: updatedUser.cover_image,
     };
   }
-
 }

@@ -20,7 +20,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
-
 @Module({
   providers: [
     {
@@ -31,14 +30,14 @@ import { join } from 'path';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads'
+      serveRoot: '/uploads',
     }),
-    PrismaModule, 
-    UsersModule, 
-    CategoriesModule, 
-    ChapterimagesModule, 
-    ChaptersModule, 
-    ComicsModule, 
+    PrismaModule,
+    UsersModule,
+    CategoriesModule,
+    ChapterimagesModule,
+    ChaptersModule,
+    ComicsModule,
     AuthModule,
     TransactionsModule,
     NotificationsModule,
@@ -47,6 +46,7 @@ import { join } from 'path';
     ComicreadhistoryModule,
     ComicfollowersModule,
     ChapterunlocksModule,
+
     ConfigModule.forRoot({
       isGlobal: true,
     }),

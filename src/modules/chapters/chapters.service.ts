@@ -17,7 +17,7 @@ export class ChaptersService {
 
     await this.comicService.exisComic(createChapterDto.comic_id);
 
-    const data = this.prisma.chapters.create({
+    const data = await this.prisma.chapters.create({
       data: createChapterDto
     })
 
@@ -92,7 +92,6 @@ export class ChaptersService {
   
     try {
       while (true) {
-        // Lấy các chapter cần unlock
         const chapters = await this.prisma.chapters.findMany({
           where: {
             is_locked: true,
