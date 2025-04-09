@@ -14,13 +14,18 @@ async function bootstrap() {
     }),
   );
 
-
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: '*', // Cho phép tất cả các nguồn
     credentials: true, // Cho phép gửi cookies/token
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT', 'OPTIONS'], // Cho phép các phương thức khác nhau
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+    ], // Các header cho phép
   });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
