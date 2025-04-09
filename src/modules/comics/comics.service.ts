@@ -6,6 +6,7 @@ import { CountriesService } from '../countries/countries.service';
 import { PaninationService } from 'src/helpers/panination.service';
 import { comics } from '@prisma/client';
 import { CategoriesService } from '../categories/categories.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ComicsService {
@@ -14,6 +15,7 @@ export class ComicsService {
     private readonly countryService: CountriesService,
     private readonly paninationService: PaninationService,
     private readonly categoryService: CategoriesService,
+    private readonly configService: ConfigService
   ) {}
 
   async create(
@@ -29,7 +31,7 @@ export class ComicsService {
     return await this.prisma.comics.create({
       data: {
         ...comicData,
-        cover_image: `http://localhost:3000/uploads/chapter/${file.filename}`,
+        cover_image: `${this.configService.get<string>('HTTP_UPLOAD')}/uploads/chapter/${file.filename}`,
         comic_categories: {
           create: categoryIds.map((categoryIds) => ({
             categories: { connect: { category_id: categoryIds } },

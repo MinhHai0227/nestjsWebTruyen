@@ -11,6 +11,7 @@ import { PasswordwordService } from 'src/helpers/pasword.service';
 import { Prisma, users, users_role } from '@prisma/client';
 import { PaninationService } from 'src/helpers/panination.service';
 import { CreateRegisterDto } from 'src/auth/dto/create-register.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +19,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly passwordService: PasswordwordService,
     private readonly paninationService: PaninationService,
+    private readonly configService: ConfigService,
   ) {}
 
   async findUserByEmail(email: string): Promise<users | null> {
@@ -180,10 +182,8 @@ export class UsersService {
     return await this.prisma.users.update({
       where: { user_id: user_id },
       data: {
-        cover_image: `http://localhost:3000/uploads/avatar/${file.filename}`,
+        cover_image: `${this.configService.get<string>('HTTP_UPLOAD')}/avatar/${file.filename}`,
       },
     });
   }
-
-
 }

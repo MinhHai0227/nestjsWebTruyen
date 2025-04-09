@@ -3,12 +3,14 @@ import { CreateChapterimageDto } from './dto/create-chapterimage.dto';
 import { UpdateChapterimageDto } from './dto/update-chapterimage.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChaptersService } from '../chapters/chapters.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ChapterimagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly chapterService: ChaptersService,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(chapter_id: number, files: Express.Multer.File[]) {
@@ -16,7 +18,7 @@ export class ChapterimagesService {
 
     const images = files.map((file) => ({
       chapter_id: chapter_id,
-      image_url: `http://localhost:3000/uploads/chapter/${file.filename}`,
+      image_url: `${this.configService.get<string>('HTTP_UPLOAD')}/uploads/chapter/${file.filename}`,
     }));
 
     return await this.prisma.chapter_images.createMany({
